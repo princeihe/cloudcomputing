@@ -3,10 +3,10 @@ body {
     margin-top: 50px;
     font-family: 'Lato';
 }
-
+/*
 .item {
     background-color: white;
-    padding: 15px;
+    padding: 10px;
     margin-bottom: 15px;
     border: transparent;
     border-radius: 5px;
@@ -26,6 +26,7 @@ body {
     color: black;
 }
 
+
 .name {
     padding-top: 3px;
 }
@@ -37,7 +38,7 @@ body {
 button:focus {
     border: 1px solid #333;
 }
-
+*/
 .calculator {
   width: 300px;
   margin: 0 auto;
