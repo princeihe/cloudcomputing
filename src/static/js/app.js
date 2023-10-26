@@ -13,38 +13,32 @@ function App() {
 
 function TodoListCard() {
     const [items, setItems] = React.useState(null);
+    const [itemCount, setItemCount] = React.useState(0); // Added item count state
 
     React.useEffect(() => {
         fetch('/items')
             .then(r => r.json())
-            .then(setItems);
+            .then(items => {
+                setItems(items);
+                setItemCount(items.length); // Update the item count
+            });
     }, []);
 
     const onNewItem = React.useCallback(
         newItem => {
             setItems([...items, newItem]);
+            setItemCount(itemCount + 1); // Increment item count
         },
-        [items],
-    );
-
-    const onItemUpdate = React.useCallback(
-        item => {
-            const index = items.findIndex(i => i.id === item.id);
-            setItems([
-                ...items.slice(0, index),
-                item,
-                ...items.slice(index + 1),
-            ]);
-        },
-        [items],
+        [items, itemCount]
     );
 
     const onItemRemoval = React.useCallback(
         item => {
             const index = items.findIndex(i => i.id === item.id);
             setItems([...items.slice(0, index), ...items.slice(index + 1)]);
+            setItemCount(itemCount - 1); // Decrement item count
         },
-        [items],
+        [items, itemCount]
     );
 
     if (items === null) return 'Loading...';
@@ -52,6 +46,7 @@ function TodoListCard() {
     return (
         <React.Fragment>
             <AddItemForm onNewItem={onNewItem} />
+            <p className="text-center">Total items: {itemCount}</p>
             {items.length === 0 && (
                 <p className="text-center">No items yet! Add one above!</p>
             )}
@@ -59,7 +54,6 @@ function TodoListCard() {
                 <ItemDisplay
                     item={item}
                     key={item.id}
-                    onItemUpdate={onItemUpdate}
                     onItemRemoval={onItemRemoval}
                 />
             ))}
@@ -114,54 +108,22 @@ function AddItemForm({ onNewItem }) {
     );
 }
 
-function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
+function ItemDisplay({ item, onItemRemoval }) {
     const { Container, Row, Col, Button } = ReactBootstrap;
-
-    const toggleCompletion = () => {
-        fetch(`/items/${item.id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                name: item.name,
-                completed: !item.completed,
-            }),
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(r => r.json())
-            .then(onItemUpdate);
-    };
 
     const removeItem = () => {
         fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
-            onItemRemoval(item),
+            onItemRemoval(item)
         );
     };
 
     return (
-        <Container fluid className={`item ${item.completed && 'completed'}`}>
+        <Container fluid className={`item`}>
             <Row>
-                <Col xs={1} className="text-center">
-                    <Button
-                        className="toggles"
-                        size="sm"
-                        variant="link"
-                        onClick={toggleCompletion}
-                        aria-label={
-                            item.completed
-                                ? 'Mark item as incomplete'
-                                : 'Mark item as complete'
-                        }
-                    >
-                        <i
-                            className={`far ${
-                                item.completed ? 'fa-check-square' : 'fa-square'
-                            }`}
-                        />
-                    </Button>
-                </Col>
                 <Col xs={10} className="name">
                     {item.name}
                 </Col>
-                <Col xs={1} className="text-center remove">
+                <Col xs={2} className="text-center remove">
                     <Button
                         size="sm"
                         variant="link"
